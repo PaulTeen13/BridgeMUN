@@ -1,0 +1,760 @@
+/* ===============================================================
+   BRIDGEMUN — ALL STYLING
+
+   This one file controls how every page looks. Both index.html
+   (the sign-in page) and committee.html use it.
+
+   The design rules being followed here:
+     - A calm beige background
+     - Rounded corners everywhere, no sharp edges
+     - Plenty of empty space so the page feels uncrowded
+     - Very few colours, so nothing competes for attention
+   =============================================================== */
+
+
+/* ---------------------------------------------------------------
+   COLOURS AND SHAPES
+
+   Every colour used on the site is named once, here. Changing a
+   value on this list changes it everywhere at once.
+   --------------------------------------------------------------- */
+:root {
+  --bg: #ede7d9;         /* the beige page background */
+  --surface: #ffffff;    /* the white cards sitting on the beige */
+  --ink: #2b2a26;        /* main text, a warm near-black */
+  --muted: #8a8578;      /* quieter text: dates, labels, hints */
+  --line: #e2dcce;       /* faint borders, tinted to match the beige */
+  --accent: #3d5a80;     /* the single accent colour, a muted navy */
+  --accent-dark: #33496a;/* the same navy, darker, for hover states */
+  --danger: #a4453a;     /* used only for errors and the record dot */
+
+  --radius: 16px;        /* the standard rounded corner */
+  --radius-small: 10px;  /* for smaller items like input boxes */
+}
+
+
+/* ---------------------------------------------------------------
+   PAGE BASICS
+   --------------------------------------------------------------- */
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keeps content in a comfortable centred column instead of
+   stretching across a wide monitor. The generous side padding is
+   part of the "leave empty space" goal. */
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 80px 24px;
+}
+
+/* The white rounded panels that hold each section. */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 22px;
+}
+
+/* Small quiet uppercase label, e.g. the word "Topic". */
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* Section headings such as "Delegates". */
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* A heading with a quiet note pushed to the far right. */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.section-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+
+/* ---------------------------------------------------------------
+   THE UN EMBLEM AND SITE HEADER
+   --------------------------------------------------------------- */
+
+/* The small globe mark. Deliberately kept small, as asked. */
+.logo {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* The strip across the top of each page: emblem, site name, and
+   on the committee page the signed-in delegate. */
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.site-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* Pushes whatever follows it over to the right-hand edge. */
+.spacer {
+  margin-left: auto;
+}
+
+/* The name of the signed-in delegate in the header. */
+.current-user {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+
+/* ---------------------------------------------------------------
+   COMMITTEE HEADING
+   --------------------------------------------------------------- */
+
+.committee-name {
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px 0;
+}
+
+.topic {
+  margin: 0;
+  font-size: 16px;
+}
+
+
+/* ---------------------------------------------------------------
+   BUTTONS
+
+   All buttons are fully rounded ("pill" shaped) so there are no
+   sharp corners anywhere on the page.
+   --------------------------------------------------------------- */
+
+.button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* The main action on a page, e.g. "Post" or "Sign in". */
+.button-primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+/* A quieter button that sits next to the main one. */
+.button-quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.button-quiet:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+/* A plain text button with no box around it, e.g. "Sign out". */
+.button-plain {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.button-plain:hover {
+  color: var(--ink);
+}
+
+/* Any button that cannot currently be pressed. */
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* The row of buttons under the writing box. */
+.button-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+
+/* ---------------------------------------------------------------
+   FORMS (sign in, create account, writing a post)
+   --------------------------------------------------------------- */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+/* Text boxes and dropdowns share one look. */
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  padding: 11px 14px;
+  background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Highlights the box the person is currently typing in. */
+.input:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--accent);
+}
+
+/* The larger box for writing or dictating a speech. */
+.input-large {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* A red message shown when something goes wrong, e.g. a wrong
+   password. Hidden until there is something to say. */
+.form-error {
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 4px;
+  min-height: 18px;
+}
+
+/* The "Don't have an account? Create one" line under the form. */
+.form-switch {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin: 18px 0 0 0;
+}
+
+.form-switch button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+
+/* ---------------------------------------------------------------
+   THE SIGN-IN PAGE
+
+   Centred in the window with lots of space around it, so the first
+   thing a visitor sees feels calm rather than busy.
+   --------------------------------------------------------------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  margin: 0;
+}
+
+/* The emblem and "BridgeMUN" above the sign-in box. */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.auth-title {
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 3px 0;
+}
+
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 24px 0;
+}
+
+
+/* ---------------------------------------------------------------
+   DELEGATES
+   --------------------------------------------------------------- */
+
+/* Arranges delegates into columns that fit the window: two across
+   on a laptop, one on a phone. */
+.delegate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 9px;
+}
+
+.delegate {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  /* Lets a tile sit above its neighbours while it grows. */
+  position: relative;
+  z-index: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* What a delegate tile does while the mouse is over it. */
+.delegate:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 18px rgba(43, 42, 38, 0.10);
+  border-color: var(--accent);
+  z-index: 1;
+}
+
+.delegate-country {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* The name of the student holding this seat. Hidden until the tile
+   is clicked. */
+.delegate-name {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+/* Shows the tiles can be pressed. Only correct now that clicking
+   one actually reveals something. */
+.delegate {
+  cursor: pointer;
+}
+
+/* A clear outline when a tile is reached using the keyboard rather
+   than the mouse. */
+.delegate:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The round patch holding a country's flag. */
+.flag {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  background: var(--bg);
+  border-radius: 50%;
+  /* Fonts that can actually draw flag emoji. */
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+
+/* ---------------------------------------------------------------
+   BADGES
+   --------------------------------------------------------------- */
+
+/* The small tag showing whether a delegate is a human or an AI. */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* AI delegates get the one accent colour, so they are the only
+   coloured thing in the list and are impossible to miss. */
+.badge-ai {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------------
+   THE DISCUSSION FEED
+   --------------------------------------------------------------- */
+
+.message {
+  display: flex;
+  gap: 13px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.message:last-child {
+  border-bottom: none;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.message-country {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* The time a speech was given. */
+.message-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* The subject line a delegate gave their speech. Only appears if
+   they actually wrote one. */
+.message-title {
+  margin: 0 0 2px 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+.message-text {
+  margin: 0;
+  font-size: 15px;
+  /* Keeps long pasted words from spilling outside the card. */
+  overflow-wrap: break-word;
+}
+
+/* Spacing between the title box and the speech box in the
+   "Take the floor" panel. */
+.compose-field {
+  margin-bottom: 16px;
+}
+
+/* Shown in place of the feed while it is loading, or when nobody
+   has spoken yet. */
+.feed-empty {
+  font-size: 14px;
+  color: var(--muted);
+  padding: 22px 0;
+  text-align: center;
+}
+
+
+/* ---------------------------------------------------------------
+   SPEAKERS' LIST
+
+   The queue of delegates waiting to speak, in order.
+   --------------------------------------------------------------- */
+
+.speaker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* One delegate waiting their turn. */
+.speaker {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.speaker:last-child {
+  border-bottom: none;
+}
+
+.speaker-country {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* The delegate at the top of the queue, who currently has the
+   floor. Given the accent colour so the room can see at a glance
+   whose turn it is. */
+.speaker-current .speaker-country {
+  color: var(--accent);
+}
+
+/* The small "HAS THE FLOOR" tag. */
+.speaker-tag {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/* Pushes the remove button to the right-hand edge. */
+.speaker-remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.speaker-remove:hover {
+  color: var(--danger);
+}
+
+
+/* ---------------------------------------------------------------
+   THE SPEECH CLOCK
+   --------------------------------------------------------------- */
+
+.timer {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 14px 0 16px 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 6px;
+}
+
+/* The countdown itself, deliberately large so it is readable from
+   across a room. */
+.timer-clock {
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums; /* stops digits jiggling */
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.timer-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The last ten seconds, and time already up. */
+.timer-low .timer-clock {
+  color: var(--danger);
+}
+
+
+/* ---------------------------------------------------------------
+   VOTING
+   --------------------------------------------------------------- */
+
+/* The motion currently being voted on. */
+.vote-question {
+  margin: 0 0 14px 0;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+/* The running count of votes cast so far. */
+.vote-tally {
+  display: flex;
+  gap: 22px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* One column of the tally: a big number with its label under it. */
+.vote-tally-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.vote-tally-number {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums; /* stops digits jiggling */
+  line-height: 1.2;
+}
+
+.vote-tally-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+/* A short note saying how this delegate voted. */
+.vote-yours {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+  align-self: flex-end;
+}
+
+
+/* ---------------------------------------------------------------
+   CHAIR CONTROLS
+
+   Only shown to the delegate who signed up as chair.
+   --------------------------------------------------------------- */
+
+.chair-controls {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+
+/* ---------------------------------------------------------------
+   "NEW SPEECHES" NOTICE
+
+   Floats near the bottom of the window when speeches arrive that
+   the reader has not seen. It sits above the page rather than in
+   it, so it stays put while they scroll.
+   --------------------------------------------------------------- */
+
+.new-speech-alert {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(43, 42, 38, 0.22);
+}
+
+.new-speech-alert:hover {
+  background: var(--accent-dark);
+}
+
+
+/* ---------------------------------------------------------------
+   RECORDING
+
+   The small red dot that pulses while the microphone is listening,
+   so it is always obvious when the page is hearing you.
+   --------------------------------------------------------------- */
+
+.record-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  margin-right: 7px;
+  vertical-align: middle;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* A short line of text next to the buttons, e.g. "Listening…". */
+.record-status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+
+/* ---------------------------------------------------------------
+   MOTION PREFERENCES
+
+   Some people switch animation off in their system settings
+   because movement makes them unwell. This respects that: things
+   still highlight, they just stop moving.
+   --------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .delegate,
+  .button,
+  .input {
+    transition: none;
+  }
+  .delegate:hover {
+    transform: none;
+  }
+  .record-dot {
+    animation: none;
+  }
+}

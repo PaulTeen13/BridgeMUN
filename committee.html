@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BridgeMUN — UN Security Council</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="page">
+
+  <!-- -------------------------------------------------------------
+       SITE HEADER
+       The small emblem and site name, with the signed-in delegate
+       and a sign-out link on the right.
+       ------------------------------------------------------------- -->
+  <header class="site-header">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#3d5a80" stroke-width="2.4" stroke-linecap="round">
+        <circle cx="32" cy="30" r="15"/>
+        <ellipse cx="32" cy="30" rx="6.5" ry="15"/>
+        <line x1="17" y1="30" x2="47" y2="30"/>
+        <path d="M20 21 Q32 26 44 21"/>
+        <path d="M20 39 Q32 34 44 39"/>
+        <path d="M22 54 Q8 44 12 26"/>
+        <path d="M42 54 Q56 44 52 26"/>
+      </g>
+    </svg>
+    <span class="site-name">BridgeMUN</span>
+
+    <span class="spacer"></span>
+    <span class="current-user" id="current-user"></span>
+    <button class="button-plain" id="signout-button">Sign out</button>
+  </header>
+
+  <!-- -------------------------------------------------------------
+       COMMITTEE HEADING
+       Which committee this is and what it is debating.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <h1 class="committee-name">UN Security Council</h1>
+    <div class="label">Topic</div>
+
+  </div>
+
+  <!-- -------------------------------------------------------------
+       DELEGATES
+       The countries seated in this committee. This list is written
+       out by hand for now — it is the roster of the room, not a
+       list of who has signed up.
+
+       To add another delegate, copy one tile and change the flag,
+       the country name, and the badge.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">Delegates</h2>
+      <span class="section-note">10 seats · 3 AI</span>
+    </div>
+
+    <ul class="delegate-list">
+      <li class="delegate">
+        <span class="flag">🇰🇷</span>
+        <span>
+          <span class="delegate-country">South Korea</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇺🇸</span>
+        <span>
+          <span class="delegate-country">United States of America</span><br>
+          <span class="badge badge-ai">AI delegate</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇫🇷</span>
+        <span>
+          <span class="delegate-country">France</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇬🇧</span>
+        <span>
+          <span class="delegate-country">United Kingdom</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇨🇳</span>
+        <span>
+          <span class="delegate-country">China</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇷🇺</span>
+        <span>
+          <span class="delegate-country">Russian Federation</span><br>
+          <span class="badge badge-ai">AI delegate</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇯🇵</span>
+        <span>
+          <span class="delegate-country">Japan</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇧🇷</span>
+        <span>
+          <span class="delegate-country">Brazil</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇮🇳</span>
+        <span>
+          <span class="delegate-country">India</span><br>
+          <span class="badge badge-ai">AI delegate</span>
+        </span>
+      </li>
+
+      <li class="delegate">
+        <span class="flag">🇰🇪</span>
+        <span>
+          <span class="delegate-country">Kenya</span><br>
+          <span class="badge">Human</span>
+        </span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       SPEAKERS' LIST
+
+       The queue of delegates waiting to speak. Whoever is at the
+       top has the floor. Delegates add themselves; the chair can
+       remove anybody and run the clock.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">Speakers' list</h2>
+      <span class="section-note" id="speakers-count"></span>
+    </div>
+
+    <!-- The countdown for whoever currently has the floor. Hidden
+         until the chair starts it. -->
+    <div class="timer" id="timer" hidden>
+      <span class="timer-clock" id="timer-clock">0:00</span>
+      <span class="timer-label" id="timer-label">remaining</span>
+    </div>
+
+    <ol class="speaker-list" id="speaker-list"></ol>
+
+    <p class="feed-empty" id="speakers-empty">Nobody is waiting to speak.</p>
+
+    <div class="button-row">
+      <!-- Changes to "Leave the list" once you are on it. -->
+      <button class="button button-quiet" id="queue-button">Add me to the list</button>
+    </div>
+
+    <!-- Only the chair sees these. Everyone else never knows they
+         are here. -->
+    <div class="chair-controls" id="chair-controls" hidden>
+      <div class="label">Chair controls</div>
+      <div class="button-row">
+        <button class="button button-quiet" id="timer-60">Start 60s</button>
+        <button class="button button-quiet" id="timer-90">Start 90s</button>
+        <button class="button button-quiet" id="timer-stop">Stop clock</button>
+        <button class="button button-quiet" id="next-speaker">Next speaker</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       VOTING
+
+       The chair puts a motion to the floor; every delegate answers
+       Yes, No or Abstain. The running tally is visible to the whole
+       committee, and the outcome is written into the discussion so
+       the record of the debate includes its decisions.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">Voting</h2>
+      <span class="section-note" id="vote-note"></span>
+    </div>
+
+    <!-- Shown when there is nothing to vote on. -->
+    <p class="feed-empty" id="vote-idle">No vote in progress.</p>
+
+    <!-- Shown while a vote is open. -->
+    <div id="vote-open" hidden>
+      <p class="vote-question" id="vote-question"></p>
+
+      <!-- Hidden from the chair, who does not vote. -->
+      <div class="button-row" id="vote-buttons">
+        <button class="button button-quiet" id="vote-yes">Yes</button>
+        <button class="button button-quiet" id="vote-no">No</button>
+        <button class="button button-quiet" id="vote-abstain">Abstain</button>
+      </div>
+
+      <div class="vote-tally" id="vote-tally"></div>
+    </div>
+
+    <!-- Only the chair sees these. -->
+    <div class="chair-controls" id="vote-chair-controls" hidden>
+      <div class="label">Chair controls</div>
+
+      <div class="compose-field">
+        <input
+          class="input"
+          type="text"
+          id="vote-question-input"
+          maxlength="140"
+          placeholder="e.g. Motion for a 10-minute moderated caucus">
+      </div>
+
+      <div class="button-row">
+        <button class="button button-primary" id="open-vote">Open vote</button>
+        <button class="button button-quiet" id="close-vote">Close vote</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       COMMITTEE DISCUSSION
+       Every speech given in this committee, oldest first. These are
+       filled in by committee.js from the database, so they appear
+       for everyone signed in, not just the person who wrote them.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">Committee discussion</h2>
+      <span class="section-note" id="feed-count"></span>
+    </div>
+
+    <!-- "aria-live" tells screen-reading software to announce new
+         speeches as they arrive. -->
+    <div id="discussion" aria-live="polite">
+      <p class="feed-empty" id="feed-empty">Loading the discussion…</p>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       TAKE THE FLOOR
+       Where a delegate writes or dictates their own speech.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">Take the floor</h2>
+    </div>
+
+    <!-- A short subject line for the speech. Delegates may leave it
+         empty and simply speak. -->
+    <div class="compose-field">
+      <label for="post-title" class="label">Title (optional)</label>
+      <input
+        class="input"
+        type="text"
+        id="post-title"
+        maxlength="80"
+        placeholder="e.g. On verification mechanisms">
+    </div>
+
+    <label for="post-text" class="label">Your speech</label>
+    <textarea
+      class="input input-large"
+      id="post-text"
+      placeholder="Type your speech, or press Record and say it out loud."></textarea>
+
+    <div class="button-row">
+      <button class="button button-primary" id="post-button">Post</button>
+      <button class="button button-quiet" id="record-button">Record</button>
+      <span class="record-status" id="record-status"></span>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       AI DELEGATE
+       The mock opening speech from earlier. The words are still
+       written by hand — no real AI is involved yet — but the speech
+       is now posted into the shared feed like any other.
+       ------------------------------------------------------------- -->
+  <div class="card">
+    <div class="section-head">
+      <h2 class="section-title">AI delegate</h2>
+    </div>
+    <button class="button button-quiet" id="ai-button">Generate AI opening speech</button>
+  </div>
+
+</div>
+
+<!-- Floats above the page when speeches arrive that you have not
+     seen. Hidden the rest of the time. Clicking it jumps to them. -->
+<button class="new-speech-alert" id="new-speech-alert" hidden></button>
+
+<!-- The behaviour for this page. "type=module" is needed because
+     the file loads Firebase using import statements. -->
+<script type="module" src="committee.js"></script>
+</body>
+</html>

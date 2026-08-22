@@ -1,0 +1,94 @@
+// ---------------------------------------------------------------
+// FIRESTORE SECURITY RULES
+//
+// Copy everything below into the Firebase console:
+//   Firestore Database  ->  Rules  ->  paste  ->  Publish
+//
+// These rules decide who may read and change what. Without them,
+// Firebase either blocks the whole app or leaves the database open
+// to anyone on the internet — neither of which you want.
+// ---------------------------------------------------------------
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Is this request coming from somebody who is signed in?
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Is the person making this request the chair? This looks up
+    // their profile and checks the role they chose at sign-up, so
+    // it cannot be faked by editing the web page.
+    function isChair() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Chair";
+    }
+
+    // Delegate profiles: name, country, flag, role.
+    match /users/{userId} {
+      // Any signed-in delegate may read profiles.
+      allow read: if signedIn();
+      // But you may only write your own.
+      allow write: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Speeches in the committee.
+    match /posts/{postId} {
+      // Any signed-in delegate may read the discussion.
+      allow read: if signedIn();
+
+      // You may post, but the speech must actually contain
+      // something and must not be enormous.
+      allow create: if signedIn()
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() < 5000;
+
+      // Nothing in the record of a debate may be edited or deleted
+      // once it has been said.
+      allow update, delete: if false;
+    }
+
+    // The queue of delegates waiting to speak.
+    match /speakers/{speakerId} {
+      allow read: if signedIn();
+
+      // You may only add yourself to the list, not somebody else.
+      allow create: if signedIn()
+                    && request.resource.data.uid == request.auth.uid;
+
+      // You may take yourself off the list. The chair may remove
+      // anybody, which is how they move the debate along.
+      allow delete: if signedIn()
+                    && (resource.data.uid == request.auth.uid || isChair());
+
+      // A place in the queue is never edited, only added or removed.
+      allow update: if false;
+    }
+
+    // The speech clock. Everybody watches it; only the chair runs it.
+    match /session/{documentId} {
+      allow read: if signedIn();
+      allow write: if isChair();
+    }
+
+    // Votes. Only the chair may open or close one, but every
+    // delegate may see it.
+    match /votes/{voteId} {
+      allow read: if signedIn();
+      allow create, update: if isChair();
+      allow delete: if false;
+
+      // One ballot per delegate, filed under their own account id.
+      // That id is what stops anyone voting twice or voting on
+      // somebody else's behalf.
+      match /ballots/{userId} {
+        allow read: if signedIn();
+        allow write: if signedIn() && request.auth.uid == userId;
+      }
+    }
+  }
+}

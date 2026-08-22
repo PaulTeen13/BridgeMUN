@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BridgeMUN — Sign in</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ---------------------------------------------------------------
+     THE SIGN-IN PAGE
+
+     One small card in the middle of an otherwise empty page. It
+     does two jobs, and a link at the bottom swaps between them:
+       - Sign in       (for delegates who already have an account)
+       - Create account (for new delegates)
+     --------------------------------------------------------------- -->
+
+<div class="auth-page">
+  <div class="auth-card card">
+
+    <!-- The UN-style emblem and the site name, kept small. -->
+    <div class="auth-brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <g fill="none" stroke="#3d5a80" stroke-width="2.4" stroke-linecap="round">
+          <circle cx="32" cy="30" r="15"/>
+          <ellipse cx="32" cy="30" rx="6.5" ry="15"/>
+          <line x1="17" y1="30" x2="47" y2="30"/>
+          <path d="M20 21 Q32 26 44 21"/>
+          <path d="M20 39 Q32 34 44 39"/>
+          <path d="M22 54 Q8 44 12 26"/>
+          <path d="M42 54 Q56 44 52 26"/>
+        </g>
+      </svg>
+      <span class="site-name">BridgeMUN</span>
+    </div>
+
+    <!-- These two lines change wording when the form switches
+         between signing in and creating an account. -->
+    <h1 class="auth-title" id="form-title">Sign in</h1>
+    <p class="auth-subtitle" id="form-subtitle">Take your seat in the committee.</p>
+
+    <form id="auth-form">
+
+      <!-- Only shown when creating an account: the delegate's name
+           and the country they represent. -->
+      <div class="field" id="name-field" hidden>
+        <label for="name">Your name</label>
+        <input class="input" type="text" id="name" autocomplete="name">
+      </div>
+
+      <div class="field" id="country-field" hidden>
+        <label for="country">Country you represent</label>
+        <select class="input" id="country">
+          <option value="">Choose a country…</option>
+          <option value="🇰🇷|South Korea">🇰🇷 South Korea</option>
+          <option value="🇺🇸|United States of America">🇺🇸 United States of America</option>
+          <option value="🇫🇷|France">🇫🇷 France</option>
+          <option value="🇬🇧|United Kingdom">🇬🇧 United Kingdom</option>
+          <option value="🇨🇳|China">🇨🇳 China</option>
+          <option value="🇷🇺|Russian Federation">🇷🇺 Russian Federation</option>
+          <option value="🇯🇵|Japan">🇯🇵 Japan</option>
+          <option value="🇧🇷|Brazil">🇧🇷 Brazil</option>
+          <option value="🇮🇳|India">🇮🇳 India</option>
+          <option value="🇰🇪|Kenya">🇰🇪 Kenya</option>
+        </select>
+      </div>
+
+      <!-- Only shown when creating an account. Most people are
+           delegates; one person runs the committee as chair. -->
+      <div class="field" id="role-field" hidden>
+        <label for="role">Your role</label>
+        <select class="input" id="role">
+          <option value="Delegate">Delegate — represents a country</option>
+          <option value="Chair">Chair — runs the committee</option>
+        </select>
+      </div>
+
+      <!-- Always shown. -->
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" type="email" id="email" autocomplete="email" required>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" type="password" id="password" autocomplete="current-password" required>
+      </div>
+
+      <!-- Any problem — wrong password, email already used — is
+           written here. Empty the rest of the time. -->
+      <p class="form-error" id="form-error"></p>
+
+      <button class="button button-primary" type="submit" id="submit-button" style="width: 100%;">
+        Sign in
+      </button>
+    </form>
+
+    <!-- Swaps the form between its two jobs. -->
+    <p class="form-switch">
+      <span id="switch-text">New delegate?</span>
+      <button type="button" id="switch-button">Create an account</button>
+    </p>
+
+  </div>
+</div>
+
+<!-- The behaviour for this page. "type=module" is needed because
+     the file loads Firebase using import statements. -->
+<script type="module" src="auth.js"></script>
+</body>
+</html>

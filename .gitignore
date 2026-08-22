@@ -1,0 +1,16 @@
+# Files macOS creates in every folder. Not part of the project.
+.DS_Store
+
+# Editor settings, personal to whoever is working on the project.
+.idea/
+.vscode/
+
+# Firebase command-line tool leftovers, if you ever install it.
+.firebase/
+firebase-debug.log
+
+# Never commit a service account key. Unlike the web config in
+# firebase-config.js, these are real secrets that would let anyone
+# read and delete your entire database.
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
