@@ -36,10 +36,34 @@
 
   <!-- -------------------------------------------------------------
        COMMITTEE HEADING
-       Which committee this is.
+       Which committee this is, and what it is debating. The topic
+       is set by the chair and kept in the database, so changing it
+       updates every delegate's screen at once.
        ------------------------------------------------------------- -->
   <div class="card">
     <h1 class="committee-name">UN Security Council</h1>
+
+    <div class="label">Topic</div>
+    <p class="topic" id="topic-text">No topic set yet.</p>
+
+    <!-- Only the chair sees these. -->
+    <div class="chair-controls" id="topic-chair-controls" hidden>
+      <div class="label">Chair controls</div>
+
+      <div class="compose-field">
+        <input
+          class="input"
+          type="text"
+          id="topic-input"
+          maxlength="120"
+          placeholder="Type a topic, or suggest one from SDG 9">
+      </div>
+
+      <div class="button-row">
+        <button class="button button-primary" id="set-topic">Set topic</button>
+        <button class="button button-quiet" id="suggest-topic">Suggest a topic</button>
+      </div>
+    </div>
   </div>
 
   <!-- -------------------------------------------------------------
@@ -243,6 +267,14 @@
     <div class="section-head">
       <h2 class="section-title">Committee discussion</h2>
       <span class="section-note" id="feed-count"></span>
+    </div>
+
+    <!-- Which English accent speeches are read aloud in. This is a
+         personal setting: it changes what YOU hear, not what anybody
+         else hears. Hidden if the browser cannot speak. -->
+    <div class="listen-settings" id="listen-settings" hidden>
+      <label for="voice-select" class="listen-label">Read speeches aloud in</label>
+      <select class="input input-small" id="voice-select"></select>
     </div>
 
     <!-- "aria-live" tells screen-reading software to announce new

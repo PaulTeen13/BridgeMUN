@@ -1,3 +1,12 @@
+# Your API key lives here. This is a real secret — anyone who has it
+# can spend money on your account. Never commit it.
+# (.env.example is committed instead, as a template with no real key.)
+.env
+
+# Python leftovers.
+__pycache__/
+*.pyc
+
 # Files macOS creates in every folder. Not part of the project.
 .DS_Store
 

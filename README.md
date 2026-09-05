@@ -20,6 +20,9 @@ delegate's screen at once.
 - A live discussion feed, shared by everyone signed in
 - Speeches can carry an optional title
 - Speeches can be dictated out loud, transcribed by the browser as you speak
+- Any speech can be read back aloud, in whichever English accent the listener
+  prefers — a personal setting, so a student new to Model UN can follow every
+  delegate in an accent they find easy
 - A notice appears when speeches arrive while you are reading elsewhere
 
 **Running the committee**
@@ -29,17 +32,27 @@ delegate's screen at once.
 - Voting: the chair puts a motion to the floor, delegates answer Yes, No or
   Abstain, the tally updates live, and the outcome is written permanently into
   the discussion
+- The chair sets the committee topic, and can ask Claude to suggest one.
+  Suggestions are constrained to UN Sustainable Development Goal 9 — Industry,
+  Innovation and Infrastructure
 
 ## What is not real yet
 
 **The AI delegate is a hand-written paragraph.** Pressing "Generate AI opening
 speech" posts a speech that is typed into the source code. There is no model
-call behind it. Connecting a real one needs a server-side function, because an
-API key cannot safely live in a web page.
+call behind it. Topic suggestions, by contrast, are genuinely written by Claude
+— that path already exists in `server.py` and the delegate's speech could
+follow it.
 
 **Voice recording needs Chrome, Edge or Safari.** It uses the browser's own
 speech recognition, which Firefox does not have. The button disables itself and
 says so there. Audio is transcribed live and never saved.
+
+**Accents depend on the listener's computer.** Reading speeches aloud uses the
+voices the operating system already has, so the choice on offer differs from
+machine to machine — a Mac typically has six English accents, a Windows laptop
+may have two. They are English varieties (American, British, Indian,
+Australian…), not arbitrary national accents.
 
 **Anyone can sign up as the chair.** There is no invitation system. Fine for a
 classroom, not for anything public.
@@ -49,8 +62,8 @@ resolution drafting, or multiple committees.
 
 ## Running it
 
-There is no build step and nothing to install. You do need your own Firebase
-project, because the database and accounts are yours, not shared.
+There is no build step. You do need your own Firebase project, because the
+database and accounts are yours, not shared.
 
 **1. Create a Firebase project** at
 [console.firebase.google.com](https://console.firebase.google.com)
@@ -62,10 +75,26 @@ project, because the database and accounts are yours, not shared.
 - Open the Firestore **Rules** tab and paste in the contents of
   `firestore.rules`
 
-**2. Serve the folder over http**
+**2. Install the one Python dependency**
 
 ```bash
-python3 -m http.server 5173
+pip3 install -r requirements.txt
+```
+
+**3. Add an Anthropic API key** — optional, only for topic suggestions
+
+```bash
+cp .env.example .env
+```
+
+Then put a key from [console.anthropic.com](https://console.anthropic.com) into
+that file. Without one, everything still runs — "Suggest a topic" simply falls
+back to a fixed list in `committee.js` instead of asking Claude.
+
+**4. Start the server**
+
+```bash
+python3 server.py
 ```
 
 Then open <http://localhost:5173>.

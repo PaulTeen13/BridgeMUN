@@ -59,6 +59,13 @@ const timerBox = document.getElementById("timer");
 const timerClock = document.getElementById("timer-clock");
 const timerLabel = document.getElementById("timer-label");
 
+// The committee topic.
+const topicText = document.getElementById("topic-text");
+const topicChairControls = document.getElementById("topic-chair-controls");
+const topicInput = document.getElementById("topic-input");
+const setTopicButton = document.getElementById("set-topic");
+const suggestTopicButton = document.getElementById("suggest-topic");
+
 // Voting.
 const voteIdle = document.getElementById("vote-idle");
 const voteOpenBox = document.getElementById("vote-open");
@@ -124,6 +131,7 @@ onAuthStateChanged(auth, async function (user) {
   if (currentDelegate.role === "Chair") {
     chairControls.hidden = false;
     voteChairControls.hidden = false;
+    topicChairControls.hidden = false;
     // A chair runs the vote but does not cast one, as in a real
     // committee, so the Yes/No/Abstain buttons are not for them.
     voteButtons.hidden = true;
@@ -142,6 +150,7 @@ onAuthStateChanged(auth, async function (user) {
   listenToSpeakers();
   listenToClock();
   listenToVotes();
+  listenToTopic();
   setUpRoster();
   listenToDelegates();
 });
@@ -188,7 +197,7 @@ function listenToDiscussion() {
     }
 
     snapshot.forEach(function (speechDoc) {
-      addMessageToScreen(speechDoc.data());
+      addMessageToScreen(speechDoc.data(), speechDoc.id);
     });
 
     const total = snapshot.size;
@@ -213,7 +222,7 @@ function listenToDiscussion() {
    screen. Everything is inserted with "textContent", which treats
    what a delegate typed as plain words — so nobody can sneak code
    into the page through a speech. */
-function addMessageToScreen(speech) {
+function addMessageToScreen(speech, speechId) {
   const message = document.createElement("div");
   message.className = "message";
 
@@ -260,6 +269,11 @@ function addMessageToScreen(speech) {
     header.appendChild(time);
   }
 
+  // The button that reads this speech out loud, if the browser can.
+  if (canSpeak) {
+    header.appendChild(makeSpeakButton(speech, speechId));
+  }
+
   body.appendChild(header);
 
   // The subject line, shown in bold above the speech. Speeches
@@ -281,6 +295,273 @@ function addMessageToScreen(speech) {
   message.appendChild(body);
   discussionArea.appendChild(message);
 }
+
+
+/* ---------------------------------------------------------------
+   READING SPEECHES OUT LOUD
+
+   The other half of the recording feature. Where "Record" turns a
+   delegate's voice into text, this turns text back into a voice.
+
+   It uses the speech synthesis built into the browser, so — like the
+   recording — there is nothing to install, no key, and no cost. The
+   voice is whichever one the computer already has.
+   --------------------------------------------------------------- */
+
+// Not every browser can do this, so the buttons only appear if it can.
+const canSpeak = "speechSynthesis" in window;
+
+// Which speech is being read aloud right now, or null for none. Kept
+// by id rather than by button, because the feed rebuilds itself every
+// time anybody posts — which throws the old buttons away.
+let speakingSpeechId = null;
+
+
+/* ---------------------------------------------------------------
+   CHOOSING AN ACCENT
+
+   Delegates come to a conference from everywhere, and an unfamiliar
+   accent is one more barrier for a student new to Model UN. So each
+   person picks the English accent THEY want to listen in, and every
+   speech is read to them that way — whoever wrote it.
+
+   This is a personal setting, not a committee one. It is stored in
+   this browser only: it changes what you hear, and nobody else is
+   affected. That is why it lives in the browser rather than in the
+   shared database.
+   --------------------------------------------------------------- */
+
+const listenSettings = document.getElementById("listen-settings");
+const voiceSelect = document.getElementById("voice-select");
+
+// Readable names for the accents a computer may have voices for.
+// Anything not on this list still appears, labelled by its code.
+const accentNames = {
+  "en-US": "American English",
+  "en-GB": "British English",
+  "en-AU": "Australian English",
+  "en-IN": "Indian English",
+  "en-IE": "Irish English",
+  "en-ZA": "South African English",
+  "en-NZ": "New Zealand English",
+  "en-CA": "Canadian English",
+  "en-SG": "Singaporean English",
+  "en-PH": "Philippine English",
+  "en-HK": "Hong Kong English",
+  "en-NG": "Nigerian English",
+  "en-KE": "Kenyan English"
+};
+
+// Every English voice this computer has.
+let englishVoices = [];
+
+// The exact voice this delegate picked, by name, e.g. "Daniel".
+let chosenVoiceName = "";
+
+
+/* Remembers the choice between visits. Wrapped in try/catch because
+   some browser settings block storage entirely, and a blocked save
+   should not break the page. */
+function rememberVoice(name) {
+  try {
+    localStorage.setItem("bridgemun-voice", name);
+  } catch (error) {
+    // Nothing to do — the choice simply will not be remembered.
+  }
+}
+
+function recallVoice() {
+  try {
+    return localStorage.getItem("bridgemun-voice") || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+
+/* Collects the English voices installed on this computer and fills
+   the dropdown with them, sorted into groups by accent.
+
+   Browsers load voices in the background, so this may find nothing on
+   the first try and has to be run again when they arrive. */
+function loadVoices() {
+  englishVoices = window.speechSynthesis.getVoices().filter(function (voice) {
+    return voice.lang.toLowerCase().indexOf("en") === 0;
+  });
+
+  if (englishVoices.length === 0) return;
+
+  // Sort the voices into piles, one per accent. Some systems write
+  // the code as "en_GB" rather than "en-GB", hence the tidy-up.
+  const byAccent = {};
+
+  englishVoices.forEach(function (voice) {
+    const code = voice.lang.replace("_", "-");
+    if (!byAccent[code]) byAccent[code] = [];
+    byAccent[code].push(voice);
+  });
+
+  // Rebuild the dropdown: an accent heading, then its voices beneath.
+  voiceSelect.textContent = "";
+
+  Object.keys(byAccent).sort().forEach(function (code) {
+    const group = document.createElement("optgroup");
+    group.label = accentNames[code] || "English (" + code + ")";
+
+    byAccent[code].forEach(function (voice) {
+      const option = document.createElement("option");
+      // The name is what identifies a voice to the browser.
+      option.value = voice.name;
+      option.textContent = voice.name;
+      group.appendChild(option);
+    });
+
+    voiceSelect.appendChild(group);
+  });
+
+  chosenVoiceName = decideStartingVoice();
+  voiceSelect.value = chosenVoiceName;
+  listenSettings.hidden = false;
+}
+
+
+/* Works out which voice to start on: the one this delegate picked
+   last time, or failing that one matching the accent their own
+   computer is set to, or failing that simply the first available. */
+function decideStartingVoice() {
+  const saved = recallVoice();
+
+  const savedStillHere = englishVoices.filter(function (voice) {
+    return voice.name === saved;
+  });
+
+  if (savedStillHere.length > 0) return saved;
+
+  const browserLanguage = (navigator.language || "en-US").replace("_", "-");
+
+  const matchesComputer = englishVoices.filter(function (voice) {
+    return voice.lang.replace("_", "-") === browserLanguage;
+  });
+
+  if (matchesComputer.length > 0) return matchesComputer[0].name;
+
+  return englishVoices[0].name;
+}
+
+
+/* Finds the voice object for the name currently chosen. */
+function chosenVoice() {
+  const match = englishVoices.filter(function (voice) {
+    return voice.name === chosenVoiceName;
+  });
+
+  return match.length > 0 ? match[0] : null;
+}
+
+
+if (canSpeak) {
+  // Voices are often not ready the instant the page opens, so this
+  // runs now and again when the browser says they have arrived.
+  loadVoices();
+  window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
+  voiceSelect.addEventListener("change", function () {
+    chosenVoiceName = voiceSelect.value;
+    rememberVoice(chosenVoiceName);
+
+    // Stop anything mid-sentence, so the next thing heard is in the
+    // voice just picked.
+    window.speechSynthesis.cancel();
+    speakingSpeechId = null;
+    refreshSpeakButtons();
+  });
+}
+
+
+/* Builds the small "Listen" button that sits in a message's top line. */
+function makeSpeakButton(speech, speechId) {
+  const button = document.createElement("button");
+  button.className = "speak-button";
+
+  // Remembered on the button itself so it can be found again after
+  // the feed redraws.
+  button.dataset.speechId = speechId;
+
+  const isSpeakingThisOne = speakingSpeechId === speechId;
+  button.textContent = isSpeakingThisOne ? "Stop" : "Listen";
+  if (isSpeakingThisOne) button.classList.add("speak-button-active");
+
+  button.addEventListener("click", function () {
+    readAloud(speech, speechId);
+  });
+
+  return button;
+}
+
+
+/* Reads one speech out loud, or stops it if it is already being read. */
+function readAloud(speech, speechId) {
+  const wasAlreadyReadingThis = speakingSpeechId === speechId;
+
+  // Only one speech at a time — stop whatever is playing first.
+  window.speechSynthesis.cancel();
+  speakingSpeechId = null;
+
+  // Pressing "Stop" on the speech being read just stops it.
+  if (wasAlreadyReadingThis) {
+    refreshSpeakButtons();
+    return;
+  }
+
+  // Announce who is speaking before what they said, the way a chair
+  // would give somebody the floor.
+  let words = speech.country + ". ";
+  if (speech.title) words += speech.title + ". ";
+  words += speech.text;
+
+  const toRead = new SpeechSynthesisUtterance(words);
+
+  // Read it in the voice this delegate chose, whoever wrote it.
+  const voice = chosenVoice();
+  if (voice) {
+    toRead.voice = voice;
+    toRead.lang = voice.lang;
+  } else {
+    toRead.lang = "en-US";
+  }
+
+  // Slightly slower than default, which suits a formal speech.
+  toRead.rate = 0.95;
+
+  // Put the button back to "Listen" when it finishes, or if it fails.
+  toRead.onend = function () {
+    speakingSpeechId = null;
+    refreshSpeakButtons();
+  };
+  toRead.onerror = toRead.onend;
+
+  speakingSpeechId = speechId;
+  window.speechSynthesis.speak(toRead);
+  refreshSpeakButtons();
+}
+
+
+/* Puts every Listen button into the right state. Needed because the
+   feed redraws whenever anybody posts, which would otherwise leave a
+   "Stop" button on a speech that has finished. */
+function refreshSpeakButtons() {
+  document.querySelectorAll(".speak-button").forEach(function (button) {
+    const isThisOne = button.dataset.speechId === speakingSpeechId;
+    button.textContent = isThisOne ? "Stop" : "Listen";
+    button.classList.toggle("speak-button-active", isThisOne);
+  });
+}
+
+
+// Chrome carries on talking after a page closes unless told not to.
+window.addEventListener("beforeunload", function () {
+  if (canSpeak) window.speechSynthesis.cancel();
+});
 
 
 /* ---------------------------------------------------------------
@@ -502,6 +783,155 @@ aiButton.addEventListener("click", async function () {
     aiButton.disabled = false;
     recordStatus.textContent = "Could not post: " + error.message;
   }
+});
+
+
+/* ---------------------------------------------------------------
+   THE COMMITTEE TOPIC
+
+   What the committee is debating. The chair sets it, and because
+   it is kept in the database rather than typed into the page, it
+   changes on every delegate's screen at once.
+
+   It lives in its own document, separate from the speech clock, so
+   that starting the clock cannot wipe the topic by accident.
+   --------------------------------------------------------------- */
+
+/* A fixed list of topics, used as a safety net. Suggestions normally
+   come from Claude, but if the server is not running or has no API
+   key, the button falls back to this list so it never simply fails.
+
+   Every one sits inside UN Sustainable Development Goal 9 — Industry,
+   Innovation and Infrastructure — to match what the server asks Claude
+   for. If you change the goal in server.py, change these too. */
+const suggestedTopics = [
+  "Closing the global divide in affordable internet access",
+  "Financing resilient infrastructure in least developed countries",
+  "Protecting critical infrastructure from cyberattack",
+  "Decarbonising heavy industry without halting development",
+  "Access to credit for small-scale industrial enterprises",
+  "Rebuilding transport infrastructure after armed conflict",
+  "Technology transfer and domestic innovation in developing states",
+  "Governance of undersea cables and cross-border data infrastructure",
+  "Retrofitting industry for resource efficiency",
+  "Extending mobile broadband to rural and remote populations",
+  "Public-private partnerships in national infrastructure projects",
+  "Closing regional gaps in research and development investment",
+  "Semiconductor supply chains and industrial resilience",
+  "Equitable access to emerging manufacturing technologies"
+];
+
+
+/* Watches the topic and keeps the heading up to date. */
+function listenToTopic() {
+  onSnapshot(doc(db, "session", "topic"), function (snapshot) {
+    const topic = snapshot.exists() ? snapshot.data().text : "";
+
+    if (topic) {
+      topicText.textContent = topic;
+      topicText.classList.remove("topic-empty");
+    } else {
+      // Greyed out, so an unset topic does not read as a real one.
+      topicText.textContent = "No topic set yet.";
+      topicText.classList.add("topic-empty");
+    }
+  });
+}
+
+
+/* Topics already offered this session. Sent to Claude so it does not
+   suggest the same thing twice, and used by the fallback list too. */
+const topicsAlreadySuggested = [];
+
+
+/* Picks a topic from the built-in list. Used when Claude cannot be
+   reached. */
+function pickFromBuiltInList() {
+  const unused = suggestedTopics.filter(function (topic) {
+    return topicsAlreadySuggested.indexOf(topic) === -1;
+  });
+
+  // Once every topic has been offered, start round again.
+  const choices = unused.length > 0 ? unused : suggestedTopics;
+
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+
+/* Offers the chair a topic, dropped into the box rather than set
+   straight away — so it can be read, edited, or rejected by pressing
+   the button again.
+
+   The topic is written by Claude. The browser cannot ask Claude
+   directly, because that would mean putting the API key in this file
+   where anyone could read it. Instead it asks server.py, which holds
+   the key and passes the question along. */
+suggestTopicButton.addEventListener("click", async function () {
+  suggestTopicButton.disabled = true;
+  suggestTopicButton.textContent = "Thinking…";
+
+  let suggestion = null;
+
+  try {
+    const reply = await fetch("/api/topic", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        committee: "UN Security Council",
+        // So Claude does not repeat itself.
+        avoid: topicsAlreadySuggested.slice(-8)
+      })
+    });
+
+    const answer = await reply.json();
+
+    if (reply.ok && answer.topic) {
+      suggestion = answer.topic;
+    } else {
+      // The server answered, but could not help — usually no API key.
+      console.warn("Topic suggestion unavailable:", answer.error);
+    }
+  } catch (error) {
+    // No server at all, e.g. still running plain http.server.
+    console.warn("Could not reach the topic server:", error.message);
+  }
+
+  // Whatever went wrong, the chair still gets a topic.
+  if (!suggestion) {
+    suggestion = pickFromBuiltInList();
+  }
+
+  topicsAlreadySuggested.push(suggestion);
+
+  topicInput.value = suggestion;
+  suggestTopicButton.disabled = false;
+  suggestTopicButton.textContent = "Suggest a topic";
+  topicInput.focus();
+});
+
+
+/* Sets the topic for the whole committee. */
+setTopicButton.addEventListener("click", async function () {
+  const topic = topicInput.value.trim();
+
+  if (topic === "") {
+    topicInput.focus();
+    return;
+  }
+
+  setTopicButton.disabled = true;
+
+  try {
+    await setDoc(doc(db, "session", "topic"), {
+      text: topic,
+      setAt: serverTimestamp()
+    });
+    topicInput.value = "";
+  } catch (error) {
+    voteNote.textContent = "Could not set the topic: " + error.message;
+  }
+
+  setTopicButton.disabled = false;
 });
 
 
@@ -1228,6 +1658,14 @@ function createRecognition() {
 /* Begins listening. */
 function startRecording() {
   if (!recognition) createRecognition();
+
+  // Stop any speech being read aloud, or the microphone would hear
+  // the computer talking and transcribe that instead.
+  if (canSpeak) {
+    window.speechSynthesis.cancel();
+    speakingSpeechId = null;
+    refreshSpeakButtons();
+  }
 
   // Carry on from whatever is already in the box rather than
   // overwriting it.

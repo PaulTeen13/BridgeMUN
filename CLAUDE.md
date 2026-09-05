@@ -18,10 +18,15 @@ It does this:
 - Delegates create an account and sign in (email and password)
 - Each delegate picks the country they represent when signing up
 - One committee page shows the topic and the roster of countries
+- The chair sets the committee topic, and can ask Claude to suggest one
 - Delegates post speeches, which every signed-in delegate sees live
 - A speech can have an optional title
 - A speech can be dictated out loud instead of typed, using the browser's
   built-in speech recognition
+- Any speech can be read back aloud, in whichever English accent the listener
+  picks. That choice is personal — stored in their own browser, not shared —
+  so a student new to MUN can hear every delegate in an accent they follow
+  easily
 - Delegates add themselves to a speakers' list; whoever is top has the floor
 - One person signs up as chair and runs the session: a shared speech clock,
   removing speakers, moving to the next speaker
@@ -32,9 +37,10 @@ It does this:
 The AI speech is still written into the code by hand. There is no real AI call
 yet.
 
-Deliberately **not** in scope right now: real AI-written speeches, motions and
-voting, multiple committees, storing the audio of a recording. Do not add these
-unless asked.
+Deliberately **not** in scope right now: real AI-written speeches, motions
+raised by delegates, P5 veto power, roll-call voting, resolution drafting,
+multiple committees, storing the audio of a recording. Do not add these unless
+asked.
 
 ## How to run it
 
@@ -43,10 +49,18 @@ and the microphone both refuse to work from a `file://` address.
 
 ```bash
 cd "/Users/paul/Desktop/MUN Project"
-python3 -m http.server 5173
+python3 server.py
 ```
 
 Then open `http://localhost:5173`.
+
+`server.py` both serves the files and holds the Anthropic API key, which is read
+from a `.env` file that is never committed. Without a key the site still runs;
+topic suggestions just fall back to a fixed list in `committee.js`.
+
+**An API key must never appear in any file the browser downloads.** Anything a
+delegate can view, a delegate can copy. Any future AI feature goes through
+`server.py` for the same reason.
 
 ## The files
 
@@ -59,6 +73,8 @@ Then open `http://localhost:5173`.
 | `auth.js` | Sign-in page behaviour |
 | `committee.js` | Feed, posting, and voice recording |
 | `firestore.rules` | Database security rules, pasted into Firebase |
+| `server.py` | Serves the site, and asks Claude for topic suggestions |
+| `.env` | The Anthropic API key. Never committed |
 
 ## How the code is organized
 
@@ -72,7 +88,9 @@ Data lives in Firebase, in four collections:
 - `posts` — one document per speech: who said it, what they said, when
 - `speakers` — one document per delegate waiting to speak, ordered by when
   they joined the queue
-- `session` — a single document, `current`, holding the speech clock
+- `session` — two documents: `current` holds the speech clock, `topic` holds
+  what the committee is debating. They are kept apart so that writing one
+  cannot overwrite the other
 - `votes` — one document per vote, each holding a `ballots` sub-collection with
   one document per delegate, filed under their account id so nobody votes twice
 
